@@ -29,7 +29,7 @@ Usage of ./go-maxconn:
 This will open 100 TLS connections to `myhost.com` and close them again after one minute.
 
 ```
-./go-maxconn --address localhost:8080 -tls=false -connections 10 -wait 1m
+./go-maxconn -address localhost:8080 -tls=false -connections 10 -wait 1m
 ```
 
 This will open 10 TCP connections to `localhost` and close them after one minute.
