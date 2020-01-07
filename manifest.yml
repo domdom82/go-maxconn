@@ -1,0 +1,9 @@
+---
+applications:
+  - name: go-maxconn
+    memory: 1G
+    instances: 1
+    buildpacks:
+      - go_buildpack
+    path: .
+    command: go-maxconn -address <your.host.com:443> -connections 1000 -wait 5m
