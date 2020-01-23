@@ -40,12 +40,15 @@ func connectTCP(addr string, maxConn int, wait time.Duration) {
 
 	fmt.Println("Opening TCP connections...")
 	for i := 1; i <= maxConn; i++ {
+		tStart := time.Now()
 		conn, err := d.Dial("tcp", addr)
+		tEnd := time.Now()
+		dur := tEnd.Sub(tStart)
 		if err != nil {
-			fmt.Printf("%v (%d)\n", err, i)
+			fmt.Printf("%v (%d, took %s)\n", err, i, dur)
 		}
 		if conn != nil {
-			fmt.Printf("%s -> %s (%d)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i)
+			fmt.Printf("%s -> %s (%d, took %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, dur)
 		}
 
 		connections = append(connections, conn)
@@ -74,12 +77,15 @@ func connectTLS(addr string, maxConn int, wait time.Duration) {
 
 	fmt.Println("Opening TLS connections...")
 	for i := 1; i <= maxConn; i++ {
+		tStart := time.Now()
 		conn, err := tls.DialWithDialer(d, "tcp", addr, nil)
+		tEnd := time.Now()
+		dur := tEnd.Sub(tStart)
 		if err != nil {
-			fmt.Printf("%v (%d)\n", err, i)
+			fmt.Printf("%v (%d, took %s)\n", err, i, dur)
 		}
 		if conn != nil {
-			fmt.Printf("%s -> %s (%d)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i)
+			fmt.Printf("%s -> %s (%d, took %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, dur)
 		}
 
 		connections = append(connections, conn)
