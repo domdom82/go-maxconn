@@ -49,9 +49,8 @@ func connectTCP(addr string, maxConn int, wait time.Duration) {
 		}
 		if conn != nil {
 			fmt.Printf("%s -> %s (%d, took %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, dur)
+			connections = append(connections, conn)
 		}
-
-		connections = append(connections, conn)
 	}
 
 	fmt.Printf("\nWaiting for %s...\n\n", wait)
@@ -86,9 +85,8 @@ func connectTLS(addr string, maxConn int, wait time.Duration) {
 		}
 		if conn != nil {
 			fmt.Printf("%s -> %s (%d, took %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, dur)
+			connections = append(connections, conn)
 		}
-
-		connections = append(connections, conn)
 	}
 
 	fmt.Printf("\nWaiting for %s...\n\n", wait)
