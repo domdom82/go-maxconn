@@ -8,7 +8,9 @@ before:
     - go generate ./...
 builds:
 - env:
-  - CGO_ENABLED=0
+    - CGO_ENABLED=0
+  goarch:
+    - amd64
 archives:
 - replacements:
     darwin: Darwin
