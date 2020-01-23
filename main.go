@@ -19,7 +19,7 @@ func main() {
 	flag.Parse()
 
 	if *address == "" {
-		fmt.Println("ERROR: Missing address parameter")
+		flag.Usage()
 		os.Exit(1)
 	}
 
