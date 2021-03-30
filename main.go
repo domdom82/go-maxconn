@@ -30,75 +30,40 @@ func main() {
 		timePerConn = time.Second / time.Duration(*connRate)
 	}
 
-	if *useTLS {
-		connectTLS(*address, *maxConn, *wait)
-	} else {
-		connectTCP(*address, *maxConn, *wait)
-	}
+	connect(*address, *maxConn, *wait, *useTLS)
 
 }
 
-func connectTCP(addr string, maxConn int, wait time.Duration) {
+func connect(addr string, maxConn int, wait time.Duration, useTLS bool) {
 	var connections []net.Conn
-
-	d := &net.Dialer{
-		KeepAlive: 10 * time.Second,
-	}
-
-	fmt.Println("Opening TCP connections...")
-	for i := 1; i <= maxConn; i++ {
-		tStart := time.Now()
-		conn, err := d.Dial("tcp", addr)
-		tEnd := time.Now()
-		dur := tEnd.Sub(tStart)
-		if err != nil {
-			fmt.Printf("%v (%d, took %s)\n", err, i, dur)
-		}
-		if conn != nil {
-			fmt.Printf("%s -> %s (%d, took %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, dur)
-			connections = append(connections, conn)
-		}
-		if dur < timePerConn {
-			time.Sleep(timePerConn - dur)
-		}
-	}
-
-	fmt.Printf("\nWaiting for %s...\n\n", wait)
-	time.Sleep(wait)
-	fmt.Println("Closing TCP connections...")
-	for _, connection := range connections {
-		err := connection.Close()
-
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	fmt.Println("Done.")
-}
-
-func connectTLS(addr string, maxConn int, wait time.Duration) {
-	var connections []*tls.Conn
-
-	d := &net.Dialer{
-		KeepAlive: 10 * time.Second,
-	}
 
 	c := &tls.Config{
 		InsecureSkipVerify: true,
 	}
 
-	fmt.Println("Opening TLS connections...")
+	d := &net.Dialer{
+		KeepAlive: 10 * time.Second,
+	}
+
+	fmt.Println("Opening connections...")
+	tTotalStart := time.Now()
 	for i := 1; i <= maxConn; i++ {
 		tStart := time.Now()
-		conn, err := tls.DialWithDialer(d, "tcp", addr, c)
+		var conn net.Conn
+		var err error
+		if useTLS {
+			conn, err = tls.DialWithDialer(d, "tcp", addr, c)
+		} else {
+			conn, err = d.Dial("tcp", addr)
+		}
 		tEnd := time.Now()
 		dur := tEnd.Sub(tStart)
+		totalDur := tEnd.Sub(tTotalStart)
+		rate := float64(i) / float64(totalDur/time.Second)
 		if err != nil {
 			fmt.Printf("%v (%d, took %s)\n", err, i, dur)
-		}
-		if conn != nil {
-			fmt.Printf("%s -> %s (%d, took %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, dur)
+		} else if conn != nil {
+			fmt.Printf("%s -> %s (%d, took %s) (rate: %.1f/s, time: %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, dur, rate, totalDur)
 			connections = append(connections, conn)
 		}
 		if dur < timePerConn {
@@ -108,9 +73,10 @@ func connectTLS(addr string, maxConn int, wait time.Duration) {
 
 	fmt.Printf("\nWaiting for %s...\n\n", wait)
 	time.Sleep(wait)
-	fmt.Println("Closing TLS connections...")
+	fmt.Println("Closing connections...")
 	for _, connection := range connections {
 		err := connection.Close()
+
 		if err != nil {
 			fmt.Println(err)
 		}
