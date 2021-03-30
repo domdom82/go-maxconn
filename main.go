@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"math"
 	"net"
 	"os"
 	"time"
@@ -60,10 +61,14 @@ func connect(addr string, maxConn int, wait time.Duration, useTLS bool) {
 		dur := tEnd.Sub(tStart)
 		totalDur := tEnd.Sub(tTotalStart)
 		rate := float64(i) / float64(totalDur/time.Second)
+		percent := (float64(i) / float64(maxConn)) * float64(100)
+		step := int(math.Floor(float64(maxConn) * 0.05)) //log every 5%
 		if err != nil {
-			fmt.Printf("%v (%d, took %s)\n", err, i, dur)
+			fmt.Printf("%v (%d / %d %.1f%%, took %s) (rate: %.1f/s, time: %s)\n", err, i, maxConn, percent, dur, rate, totalDur)
 		} else if conn != nil {
-			fmt.Printf("%s -> %s (%d, took %s) (rate: %.1f/s, time: %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, dur, rate, totalDur)
+			if maxConn > 100 && i%step == 0 {
+				fmt.Printf("%s -> %s (%d / %d %.1f%%, took %s) (rate: %.1f/s, time: %s)\n", conn.LocalAddr().String(), conn.RemoteAddr().String(), i, maxConn, percent, dur, rate, totalDur)
+			}
 			connections = append(connections, conn)
 		}
 		if dur < timePerConn {
